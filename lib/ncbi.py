@@ -35,3 +35,27 @@ def fetch_genome (name, outdir):
         status = status + chr(8)*(len(status)+1)
         print status,
     f.close()
+
+def fetch_sra (name, outdir):
+    prefix = name[:6]
+    url='https://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/%s/%s/%s.sra' % (prefix, name, name)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    file_name = url.split('/')[-1]
+    u = urllib2.urlopen(url)
+    f = open('%s/%s' % (outdir, file_name) , 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8)*(len(status)+1)
+        print status,
+    f.close()
